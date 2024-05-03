@@ -1,0 +1,26 @@
+#Tutorial Flow 
+-------------------------------------------------------
+some basic setup before following tutorial
+-------------------------------------------------------
+create a folder in system  ...
+
+Initialize git // if want
+
+create a virtusl environment -----------> python -m venv env
+
+Activate tha environment ------------> env\Scripts\activate
+
+Add a .gitignore file and write there .env
+
+echo "# Build-a-Django-REST-API-with-the-Django-Rest-Framework" >> README.md
+git init
+git add README.md
+# git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Priest-Davos/Build-a-Django-REST-API-with-the-Django-Rest-Framework.git
+git push -u origin main
+
+commit the changes
+---------------------------------------------------------------
+commit 1
+--------------------------------------------------------------------
