@@ -1,4 +1,4 @@
-#Tutorial Flow 
+#Tutorial Flow (7 hour course)
 -------------------------------------------------------
 some basic setup before following tutorial
 -------------------------------------------------------
@@ -24,3 +24,87 @@ commit the changes
 ---------------------------------------------------------------
 commit 1
 --------------------------------------------------------------------
+Note :- Refer theory_topics file  for the topics  which are mentioned in this tut
+
+create a requirement.txt file
+there write some pacages which we will install
+   -  django
+   -  djangorestframework
+   -  pyyaml
+   -  requests
+   -  django-cors-headers
+
+then in terminal write -> pip install -r requirement.txt
+it will install all the mentioned libraries in requirement.txt file
+
+___________________________________________________________________
+ Now in current directory create two folder
+  1. backened     - here will create  the project
+  2. py_client    - will use the backened here to test
+
+_______________________________________________________________________
+
+Now cd to backened folder
+
+Now  in terminal
+    -> django-admin startproject backend .
+
+    here  . will create project in current directorty instead of creating a new directory
+    ---it will create a folder name backend and a file manage.py
+    ---to see tree , in terminal write -> tree /F
+
+      C:.
+      │   manage.py
+      │
+      └───backend
+              asgi.py
+              settings.py
+              urls.py
+              wsgi.py
+              __init__.py
+
+_______________________________________________________________________
+ 
+ --> Now create a python API  Client (00:11:41)
+
+In py__client folder create a base.py file
+
+------study about endpoints
+------study about HTTP request  vs REST API HTTP request
+
+in base.py
+    code:-
+
+        import requests
+
+        endpoint='https://httpbin.org/anything'
+
+        response=requests.get(endpoint)
+        print(response)# output= <Response [200]>
+        print(response.headers)# {'Date': 'Fri, 03 May 2024 22:36:02 GMT', 'Content-Type': 'application/json', 'Content-Length': '394', 'Connection': 'keep-alive', 'Server': 'gunicorn/19.9.0', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true'}
+        print(response.encoding)# utf-8
+
+        print (response.text) # return a json object
+       
+
+_______________________________________________________________________________________
+
+Run Django Project  (00:27:03)
+
+Headover to terminal cd to backend and write-> python manage.py runserver
+
+Now it is up and running at port 8000 by default ie at http://127.0.0.1:8000/
+
+Now in base.py update the endpoint with this link
+endpoint='http://127.0.0.1:8000/'
+
+
+--------------------------------------------------------------------------------------------
+commit 2
+--------------------------------------------------------------------------------------------
+_______________________________________________________________________________________
+
+
+
+
+
