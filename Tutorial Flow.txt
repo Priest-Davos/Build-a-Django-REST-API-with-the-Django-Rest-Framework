@@ -104,7 +104,135 @@ commit 2
 --------------------------------------------------------------------------------------------
 _______________________________________________________________________________________
 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                           create first API view ()        (00:31:00)
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+ to create it
+    in terminal write  -> python manage.py  startapp api
 
+Now your directory looks like this
+
+      C:. in backend folder
+      │   db.sqlite3
+      │   manage.py
+      │
+      ├───api
+      │   │   admin.py
+      │   │   apps.py
+      │   │   models.py
+      │   │   tests.py
+      │   │   views.py
+      │   │   __init__.py
+      │   │
+      │   └───migrations
+      │           __init__.py
+      │
+      └───backend
+          │   asgi.py
+          │   settings.py
+          │   urls.py
+          │   wsgi.py
+          │   __init__.py
+          │
+          └───__pycache__
+                  settings.cpython-312.pyc
+                  urls.cpython-312.pyc
+                  wsgi.cpython-312.pyc
+                  __init__.cpython-312.pyc
+
+Now in settings.py in backend directory  .. inside INSTALLED_APPS  write your app name .ie api
+
+Now go to api folder
+  - setup views.py 
+          code :-
+              from django.http import JsonResponse
+
+              def api_home(request , *args , **kwargs ):
+                response={"message": "this is the api_home view","msg2": "ok"}
+                return JsonResponse (response )
+
+
+  - create urls.py in current folder
+        code :-
+              from . import views
+              from django.urls import path
+
+              urlpatterns=[
+                            path("", views.api_home)
+                          ]
+
+  - now go to urls.py in backend folder
+     and setup so that it can include all the path you defined in api's urls.py  file
+      code++ :-
+      from django.urls import path , include
+      in url patterns  add ->  path('api/', include('api.urls'))
+
+  -now start the server and run base.py  to see the response of the endpoint
+  - you can also see whats this endpont is returing by going to ->http://127.0.0.1:8000/api/
+
+basic api is up and working✅
+ ____________________________________________________________________________________________________
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-Now cureently our api_home view is sending raw data but we want data which  directly comes from  database
+
+Echo GET Data  
+for this will work in 1 file views.py and  and then will test it using base.py
+
+in views.py
+
+        def api_home(request , *args , **kwargs ):
+          # print(request) # <WSGIRequest: GET '/api/?user=1'>
+          # print(type(request)) # <class 'django.core.handlers.wsgi.WSGIRequest'>
+          # print(request.headers)#{'Content-Length': '25', 'Content-Type': 'application/json', 'Host': '127.0.0.1:8000', 'User-Agent': 'python-requests/2.31.0', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive'}
+          # print(request.GET) #<QueryDict: {'user': ['1']}>
+          # print(request.user) #AnonymousUser
+          data={}
+          if request.body:
+             # in Django cannt do directly request.jsonn() unlike in Flask so  do json.loads(request.body)
+              body=request.body
+              # print(type(body)) #<class 'bytes'>
+              data=json.loads(body)     
+              print(data)#{'query': 'Helloo there'}
+              print(data.keys()) #dict_keys(['query'])
+              # data['headers']=request.headers # cannt do so chage it to dict
+              print(type(request.headers)) #<class 'django.http.request.HttpHeaders'>
+              data['headers']=dict(request.headers) # like this
+              print(type(data)) #<class 'django.http.request.HttpHeaders'>
+              print (data)
+          # response={"message": " is the api_home view","msg2": "ok"}
+          # return JsonResponse (response )
+          return JsonResponse (data )
+
+  Summary:
+  ->  The api_home view function parses incoming JSON data from an HTTP request body and combines it with information from the request headers to construct a JSON response. It demonstrates how to handle JSON data in Django views and interact with request attributes like headers and body. Finally, it returns a JSON response containing the processed data.
+
+in base.py
+
+code :-
+        import requests
+        base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+        endpoint=base_url+"/api/"
+
+        response=requests.get(endpoint,params={"user":1}, json= {"query":"Helloo there"})
+        # print(response)# output= <Response [200]>
+        # print(response.headers)# {'Date': 'Fri, 03 May 2024 22:36:02 GMT', 'Content-Type': 'application/json', 'Content-Length': '394', 'Connection': 'keep-alive', 'Server': 'gunicorn/19.9.0', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true'}
+        # print(response.encoding)# utf-8
+
+        # print (response.text) 
+
+        print(response.json())
+
+  Summary of this file code:
+    The code demonstrates how to use the requests module to send a GET request to a specified endpoint with query parameters and JSON data. It then prints the JSON response received from the server, providing insights into the structure and content of the response. This is a common approach when interacting with APIs in Python, allowing you to easily exchange data with web services and retrieve information for further processing.       
+
+------------------------------------------------------------------------------------------------
+   commit -3  (till (00:47:00))
+------------------------------------------------------------------------------------------
+
+Django model instance as an api response
 
 
 
