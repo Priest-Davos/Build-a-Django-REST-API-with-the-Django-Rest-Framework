@@ -348,4 +348,37 @@ potherwise it will send data as text/html
 -------------------------------------------------------------------------
 ✔️commit -5 till (1:00:00)
 -------------------------------------------------------------------------------
+👉Note : I created a new branch  named v3 and checkout to it
 
+   Rest Framework View and Response
+_______________________________________  
+
+convert api_home view into Django rest Framework  View (DRF API view)
+
+update views.py file ... in it api_home view
+
+ code :-
+        from  rest_framework.response import Response
+        from rest_framework.decorators import api_view
+
+     ✔️ @api_view(['GET'])  #add it   ... can specify more methods like POST ,  etc
+        def api_home(request, *args, **kwargs):
+          model_data=Product.objects.all()
+          data={}
+          # data=[]
+          if model_data:
+            for product in model_data:
+                product_data=model_to_dict(product)
+                # product_data=model_to_dict(product, fields=['price']) # can also specify filds which we want to include 
+                # data.append(product_data)
+                data[product.id]=product_data
+
+            # data=json.dumps(data)
+      ❌   # return JsonResponse(data,safe=False)  # remove it
+      ✔️  return Response(data)   #add rest_Framework Response
+ remove comments from base.py as this is new version so no need to keep old code
+ run base.py to test updated view
+ dont forget to run server
+----------------------------------------------------------
+✔️commit -6 till (1:04:00)  .. commit 1 on v3 branch
+------------------------------------------------------
