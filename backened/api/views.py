@@ -28,6 +28,7 @@ import json
 
 
 from products.models import Product
+from django .forms.models import model_to_dict
 
 def api_home(request, *args, **kwargs):
   model_data=Product.objects.all()
@@ -35,15 +36,18 @@ def api_home(request, *args, **kwargs):
   # data=[]
   if model_data:
     for product in model_data:
-        product_data = {
-            'id': product.id,
-            'title': product.title,
-            'content': product.content,  # Corrected attribute name
-            'price':str( product.price )
-        }
+        # product_data = {
+        #     'id': product.id,
+        #     'title': product.title,
+        #     'content': product.content,  # Corrected attribute name
+        #     'price':str( product.price )
+        # }
+        # print(type(product))#<class 'products.models.Product'>
+        product_data=model_to_dict(product)
+        # product_data=model_to_dict(product, fields=['price']) # can also specify filds which we want to include 
         # data.append(product_data)
         data[product.id]=product_data
 
-    data=json.dumps(data)
+    # data=json.dumps(data)
   
   return JsonResponse(data,safe=False)
