@@ -29,3 +29,4 @@ response=requests.get(endpoint,params={"user":1}, json= {"query":"Helloo there"}
 #   "url": "https://httpbin.org/anything"
 # }
 print(response.json())
+
