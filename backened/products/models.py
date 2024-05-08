@@ -9,6 +9,9 @@ class Product (models.Model):
   @property
   def sale_price(self):
     og_price=float(self.price)
-    discount=80
+    discount=self.get_discount()
     salePrice= "%.2f" %(og_price-float(og_price*discount/100))
     return salePrice
+  
+  def get_discount(self):
+    return  80

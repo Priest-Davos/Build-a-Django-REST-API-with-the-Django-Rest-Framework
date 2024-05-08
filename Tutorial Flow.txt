@@ -409,3 +409,89 @@ Setiing stage for it
 ✔️commit -7   .. commit 1 on v4 branch
 ------------------------------------------------------
 Lets create a serializer.py file in products app directory
+-In the  ProductSerializer, a new field discount_percentage is added using serializers.SerializerMethodField().
+ This field is computed dynamically by invoking the get_discount_percentage method.
+
+        from rest_framework import serializers
+        from products.models import Product
+
+        class ProductSerializer(serializers.ModelSerializer):
+          discount_percentage=serializers.SerializerMethodField()
+          class Meta:
+                model = Product
+                fields=[
+                  "title",
+                  "content",
+                  "price",
+                  "sale_price",
+                  "discount_percentage"
+                ]
+          def get_discount_percentage(self,obj):   
+               return obj.get_discount()
+
+    *The Meta inner class provides metadata options for the serializer.
+    *fields: Specifies the fields from the Product model that should be included in the serialized representation. In this case, it includes the fields title, content, and price.
+    *def get_discount_percentage(self, obj):- This method is defined to compute the value of the discount_percentage field. It takes two arguments: self (the serializer instance) and obj (the instance of the Product model being serialized). Inside this method, you can implement custom logic to compute the discount percentage based on the Product instance.
+    *When you define a SerializerMethodField() in a Django REST Framework serializer, you need to specify the name of the method that should be used to compute the value of the field dynamically. This is typically done by naming the method according to a convention recognized by Django REST Framework.
+               -: By default, Django REST Framework assumes that the method name starts with get_ followed by the name of the field.
+
+
+during some experiments, added get_discount method in Product model
+So update /models.py
+    updated code :-
+        class Product (models.Model):
+          title=models.CharField(max_length=255)
+          content=models.TextField(blank=True, null=True)
+          price=models.DecimalField(max_digits=15,decimal_places=2,default=0)
+
+          @property
+          def sale_price(self):
+            og_price=float(self.price)
+            discount=self.get_discount()
+            salePrice= "%.2f" %(og_price-float(og_price*discount/100))
+            return salePrice
+
+          def get_discount(self):
+            return  80
+
+Now update views.py to test the serializer in place of model_to_dict method
+    
+    code :-
+
+      ✅from products.serializers import ProductSerializer
+
+        def api_home(request, *args, **kwargs):
+          model_data=Product.objects.all()
+
+          data=[]
+          if model_data:
+            for product in model_data:
+
+              ❌  # product_data=model_to_dict(product)  #or
+                # product_data=model_to_dict(product, fields=['id','title','price']) # can also specify filds which we want to include 
+                # data.append(product_data)
+                                       #or use serializer
+              ✅ serializer = ProductSerializer(product) #Create an instance of ProductSerializer for the current Product instance.
+              ✅ data.append(serializer.data)#Serialize the Product instance using ProductSerializer and append the serialized data to the data list.
+
+          return Response(data)   #add rest_Framework Response
+
+Now to test run base.py
+which looks like this
+    code :-
+      import requests
+      base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+      endpoint=base_url+"/api/"
+      response=requests.get(endpoint,params={"user":1}, json= {"query":"Helloo there"})
+      print(response.json())
+
+
+    output :- [{'title': 'Product 1', 'content': 'Description 1', 'price': '21.00', 'sale_price': '4.20', 'discount_percentage': 80}, 
+               {'title': 'Product 2', 'content': 'Description 2', 'price': '22.00', 'sale_price': '4.40', 'discount_percentage': 80},
+               {'title': 'Product 3', 'content': 'Description 3', 'price': '23.00', 'sale_price': '4.60', 'discount_percentage': 80}, 
+               {'title': 'Product 4', 'content': 'Description 4', 'price': '24.00', 'sale_price': '4.80', 'discount_percentage': 80},
+               {'title': 'Product 5', 'content': 'Description 5', 'price': '25.00', 'sale_price': '5.00', 'discount_percentage': 80}]
+    
+----------------------------------------------------------
+✔️commit -8   .. commit 2 on v4 branch
+------------------------------------------------------

@@ -7,19 +7,21 @@ from django .forms.models import model_to_dict
 from  rest_framework.response import Response
 from rest_framework.decorators import api_view
 
+from products.serializers import ProductSerializer
+
 @api_view(['GET'])  #add it   ... can specify more methods like POST ,  etc
 def api_home(request, *args, **kwargs):
   model_data=Product.objects.all()
-  data={}
-  # data=[]
+
+  data=[]
   if model_data:
     for product in model_data:
-        # print(product.sale_price)
-        product_data=model_to_dict(product)
-        # product_data=model_to_dict(product, fields=['price']) # can also specify filds which we want to include 
+      
+        # product_data=model_to_dict(product)  #or
+        # product_data=model_to_dict(product, fields=['id','title','price']) # can also specify filds which we want to include 
         # data.append(product_data)
-        data[product.id]=product_data
-
-    # data=json.dumps(data)
-  # return JsonResponse(data,safe=False)  # remove it
+                               #or use serializer
+        serializer = ProductSerializer(product) #Create an instance of ProductSerializer for the current Product instance.
+        data.append(serializer.data)#Serialize the Product instance using ProductSerializer and append the serialized data to the data list.
+    
   return Response(data)   #add rest_Framework Response
