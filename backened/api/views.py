@@ -14,6 +14,7 @@ def api_home(request, *args, **kwargs):
   # data=[]
   if model_data:
     for product in model_data:
+        # print(product.sale_price)
         product_data=model_to_dict(product)
         # product_data=model_to_dict(product, fields=['price']) # can also specify filds which we want to include 
         # data.append(product_data)

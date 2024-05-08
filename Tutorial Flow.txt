@@ -382,3 +382,30 @@ update views.py file ... in it api_home view
 ----------------------------------------------------------
 ✔️commit -6 till (1:04:00)  .. commit 1 on v3 branch
 ------------------------------------------------------
+👉Note : I created a new branch  named v4 and checkout to it
+
+Django rest Framerwork Model Serializer (1:04:27)
+__________________________________________
+
+Setiing stage for it
+ Lets add a property in Product Class in models.py
+      class Product (models.Model):
+         title=models.CharField(max_length=255)
+         content=models.TextField(blank=True, null=True)
+         price=models.DecimalField(max_digits=15,decimal_places=2,default=0)
+   
+   
+         @property   
+         def sale_price(self,sale_percentage):
+            og_price=self.price
+            discount=80
+            salePrice=og_price-float(og_price*discount/100)
+            return salePrice
+
+  Now if in api_home , if we want to access this property in model_to_dict () , then by default we are not getting it 
+  So this is one of the reason os using serialzer
+
+----------------------------------------------------------
+✔️commit -7   .. commit 1 on v4 branch
+------------------------------------------------------
+Lets create a serializer.py file in products app directory
