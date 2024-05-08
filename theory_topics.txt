@@ -120,3 +120,38 @@ Overall, serialization is a fundamental concept in web development that enables 
 
 
 
+---------------------------------------------------------------------------------------
+                            @property
+---------------------------------------------------------------------------------------
+In Django, @property is a decorator that allows you to define a method that behaves like an attribute. This means you can access the method as if it were an attribute of the class rather than calling it as a regular method.
+
+Here's how you can use @property in Django models:
+
+from django.db import models
+
+class MyClass(models.Model):
+    name = models.CharField(max_length=100)
+    _age = models.IntegerField()  # Private attribute
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter
+    def age(self, value):
+        if value < 0:
+            raise ValueError("Age cannot be negative")
+        self._age = value
+In this example:
+
+We have a Django model MyClass with two fields: name and _age (note the leading underscore, which indicates a private attribute).
+We define a @property method named age, which allows us to access the _age attribute as if it were a regular attribute of the class. This method retrieves the value of _age when accessed.
+We also define a @age.setter method, which allows us to set the value of the _age attribute. This method is called when you assign a value to the age attribute.
+Now you can use age as if it were a regular attribute:
+
+python
+Copy code
+obj = MyClass(name='John')
+obj.age = 30
+print(obj.age)  # Output: 30
+The @property decorator is useful for defining computed properties or for adding custom behavior when getting or setting attribute values in Django models.
