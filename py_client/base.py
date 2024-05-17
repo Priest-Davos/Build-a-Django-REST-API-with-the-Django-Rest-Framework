@@ -8,6 +8,6 @@ endpoint=base_url+"/api/"
 # response=requests.get(endpoint,params={"user":1}, json= {"query":"Helloo there"})
 # print(response.json())
 
-post_response=requests.post(endpoint, json={"name":"Priest" })
+post_response=requests.post(endpoint, json={"title":"dead" })
 print(post_response.json() )
 

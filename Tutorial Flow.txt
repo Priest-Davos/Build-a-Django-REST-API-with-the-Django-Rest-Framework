@@ -403,7 +403,7 @@ Setiing stage for it
             return salePrice
 
   Now if in api_home , if we want to access this property in model_to_dict () , then by default we are not getting it 
-  So this is one of the reason os using serialzer
+  So this is one of the reason of using serialzer
 
 ----------------------------------------------------------
 ✔️commit -7   .. commit 1 on v4 branch
@@ -550,4 +550,66 @@ So we are getting back the data we posted
 
 ----------------------------------------------------------
 ✔️commit -9   .. commit 3 on v4 branch till(1:17:56) 
+------------------------------------------------------
+
+Now  instead of just sending the raw data we get from POST method , and sending it back in response
+,use the ProductSerializer to validate the data we get from POST method
+    
+   
+Note :- update the  get_discount_percentage(self,obj) meth in ProductSerlializer   
+      Reason :- When you send a POST request with JSON data to your API endpoint, Django REST Framework deserializes the JSON payload into a dictionary object before passing it to the serializer. Therefore, when the get_discount_percentage method is called during serialization, it receives a dictionary object (obj) instead of a Product model instance.
+  so, update serializer.py    
+     code :-  only added update method , not the whole class  of which this meth is a part
+      ➕ def get_discount_percentage(self,obj):
+      ➕   try:
+      ➕      return obj.get_discount()
+      ➕   except:
+      ➕     None
+
+update views.py
+
+    code :-
+        @api_view(['GET' ,'POST'])  #add it   ... can specify more methods like POST ,  etc
+        def api_home(request, *args, **kwargs):
+          model_data=Product.objects.all()
+          data=[]
+          if (request.method=="GET"):
+              if model_data:
+                for product in model_data:
+
+                    serializer = ProductSerializer(product) #Create an instance of ProductSerializer for the current Product instance.
+                    data.append(serializer.data)#Serialize the Product instance using ProductSerializer and append the serialized data to the data list.
+
+              return Response(data)   #add rest_Framework Response
+    ➕    elif (request.method=="POST"):
+    ➕        serializer=ProductSerializer(data=request.data)
+    ➕        if serializer.is_valid(raise_exception=True): # Check if the serializer data is valid, raise an exception if not
+    ➕            print(serializer.validated_data)
+    ➕            instance = serializer.save()  # Save the data and get the instance
+    ➕            print(instance)
+    ➕            data.append (serializer.data)
+    ➕        else:
+    ➕          print("invalid serializer")
+
+              return Response(data)
+
+Note :- serializer.is_valid(raise_exception=True): This line attempts to validate the data provided to the serializer. If the data is invalid, it will raise a ValidationError immediately, which will be handled by the Django REST framework and converted into a proper HTTP 400 Bad Request response with details about what went wrong. This makes error handling more straightforward and ensures that the client receives immediate feedback on what needs to be corrected.
+
+
+Now to test update base.py  and run
+
+    base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+    endpoint=base_url+"/api/"
+
+    ➕post_response=requests.post(endpoint, json={"title":None })
+    print(post_response.json() )
+
+o/p-> {'title': ['This field is required.']} 
+      as in model title field cannot be None so Djngo will raise a ValidationError immediately, which will be handled by the Django REST framework and converted into a proper HTTP 400 Bad Request response with details about what went wrong.
+
+so if  -> ➕post_response=requests.post(endpoint, json={"title":"dead" })
+o/p --> [{'title': 'dead', 'content': None, 'price': '0.00', 'sale_price': '0.00', 'discount_percentage': 80}]
+
+----------------------------------------------------------
+✔️commit -10   .. commit 3 on v4 branch till(1:27:06) 
 ------------------------------------------------------

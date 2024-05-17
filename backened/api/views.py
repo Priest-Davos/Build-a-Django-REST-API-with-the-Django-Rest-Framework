@@ -26,6 +26,13 @@ def api_home(request, *args, **kwargs):
 
       return Response(data)   #add rest_Framework Response
   elif (request.method=="POST"):
-      data.append (request.data)
+      serializer=ProductSerializer(data=request.data)
+      if serializer.is_valid(raise_exception=True):# Check if the serializer data is valid, raise an exception if not
+          print(serializer.validated_data)
+          instance = serializer.save()  # Save the data and get the instance
+          print(instance)
+          data.append (serializer.data)
+      else:
+        print("invalid serializer")
       
       return Response(data)
