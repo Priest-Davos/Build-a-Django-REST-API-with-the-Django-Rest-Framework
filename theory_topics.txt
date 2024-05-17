@@ -155,3 +155,10 @@ obj = MyClass(name='John')
 obj.age = 30
 print(obj.age)  # Output: 30
 The @property decorator is useful for defining computed properties or for adding custom behavior when getting or setting attribute values in Django models.
+
+
+____________________________________________________________________________________________________
+
+serializer.is_valid(raise_exception=True): This line attempts to validate the data provided to the serializer. If the data is invalid, it will raise a ValidationError immediately, which will be handled by the Django REST framework and converted into a proper HTTP 400 Bad Request response with details about what went wrong. This makes error handling more straightforward and ensures that the client receives immediate feedback on what needs to be corrected.
+
+________________________________________________________________________________________________________________
