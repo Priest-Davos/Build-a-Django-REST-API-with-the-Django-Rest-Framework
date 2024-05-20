@@ -613,3 +613,75 @@ o/p --> [{'title': 'dead', 'content': None, 'price': '0.00', 'sale_price': '0.00
 ----------------------------------------------------------
 ✔️commit -10   .. commit 3 on v4 branch till(1:27:06) 
 ------------------------------------------------------
+👉Note : I created a new branch  named v5  from branch v4 and checkout to it and work Therefore
+
+_______________________________________________________________________________________________________
+           
+                         DRF Generics RetrieveAPIView
+_______________________________________________________________________________________________________
+
+work in views.py of products
+define a DRF API view for retrieving details of a Product instance using a generic class-based view (RetrieveAPIView).
+
+code :-
+      from .serializers import ProductSerializer
+      from .models import Product
+      from rest_framework import generics
+
+      class ProductDetailApiView(generics.RetrieveAPIView):
+        queryset = Product.objects.all()
+        serializer_class=ProductSerializer
+        # lookup_field = "title"   or whatever you want as pk (primary key)
+
+create urls.py for it for endpoints for retrieving a Product instance by its primary key (pk).
+The URL pattern is designed to capture an integer value and pass it to the ProductDetailApiView view as the pk parameter.
+  <int:pk> :- This is a path converter that captures an integer from the URL and passes it to the view as a keyword argument named pk.
+             -> This URL pattern maps URLs like /1/, /2/, etc., to the ProductDetailApiView view. The integer part of the URL is captured as pk.
+          -> The RetrieveAPIView view uses the pk to look up the Product instance in the queryset (Product.objects.all()). By default, the RetrieveAPIView uses pk as the lookup field, so you don't need to explicitly specify lookup_field = "pk". 
+   
+    code :-
+      from django.urls import path
+      from .views import ProductDetailApiView
+
+      urlpatterns=[
+        path('<int:pk>/', ProductDetailApiView.as_view())
+      ]
+
+update main urls.py of backend
+   code :-
+       # add
+      path('api/products/',include('products.urls')),
+
+test the view
+  way 1- go to  http://127.0.0.1:8000/api/products/13/  in browser
+       here 13 is the id (primary key)
+  way 2 - crete a base2.py in py_client
+    
+    code :-
+        import requests
+
+        base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+        id=13
+        endpoint = f"{base_url}api/products/{id}/"
+
+        get_response=requests.get(endpoint)
+        print(get_response.json())
+
+run it 
+  output :- {'title': 'Priest', 'content': None, 'price': '0.00', 'sale_price': '0.00', 'discount_percentage': 80}
+
+----------------------------------------------------------
+✔️commit -11   .. commit 1 on v5 branch till(1:35:53) 
+------------------------------------------------------
+
+___________________________________________________________________
+          
+              DRF generics CreateAPIView
+___________________________________________________________________
+
+
+
+
+
+
+
