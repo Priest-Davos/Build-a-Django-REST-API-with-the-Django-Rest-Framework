@@ -452,3 +452,147 @@ Django Rest Framework provides a variety of methods to implement views, each wit
 - **Mixins**: Allow for composing views with various behaviors, balancing simplicity and customization.
 
 Additionally, DRF offers extensive customization options for querysets, serialization, and view behavior, ensuring flexibility in building APIs. The choice of approach depends on the complexity of the application, the need for reusability, and the preferred style of code organization.
+
+
+_______________________________________________________________________________________
+
+In Django REST Framework (DRF), when you use `CreateAPIView`, the process of saving data to the database is handled automatically by the view's `perform_create` method, which is called during the creation of an object. 
+
+Here's a detailed explanation of how it works:
+
+### Automatic Saving in CreateAPIView
+
+**CreateAPIView:**
+- The `CreateAPIView` class is a generic view that provides the behavior for creating model instances. 
+- When a POST request is made to this view, it validates the incoming data using the serializer class specified.
+- If the data is valid, the view will automatically save the new instance to the database.
+
+**perform_create Method:**
+- The `perform_create` method is a hook that you can override to customize the creation behavior.
+- By default, `perform_create` is called with the serializer after it has validated the data but before saving it.
+- If you don't override this method, the default implementation calls `serializer.save()`, which saves the instance to the database.
+
+### Why Data is Saved Without Explicit save() Call
+  -> In your `ProductCreateAPIView`, the data is saved to the database because `CreateAPIView` calls `perform_create` internally, and unless you override it to do something different, it will call `serializer.save()`.
+
+Here is the flow of how the saving happens:
+
+1. **POST Request**: A POST request is sent to the `ProductCreateAPIView`.
+2. **Validation**: The data in the request is validated against `ProductSerializer`.
+3. **perform_create**: The `perform_create` method is called with the validated serializer.
+4. **serializer.save()**: Inside `perform_create`, `serializer.save()` is called, which saves the validated data to the database.
+
+In your example, you have overridden `perform_create` but have not called `serializer.save()` explicitly, so DRF still calls the default implementation which includes `serializer.save()`:
+
+```python
+class ProductCreateAPIView(generics.CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def perform_create(self, serializer):
+        print(serializer.validated_data)  # This will print the validated data
+        # DRF calls the default perform_create which includes serializer.save()
+```
+
+If you want to see the default behavior more explicitly, you could include `super().perform_create(serializer)` within your `perform_create` method:
+
+```python
+class ProductCreateAPIView(generics.CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def perform_create(self, serializer):
+        print(serializer.validated_data)  # This will print the validated data
+        super().perform_create(serializer)  # This explicitly calls the default implementation
+```
+
+By including `super().perform_create(serializer)`, you explicitly invoke the parent class's method which handles the saving. However, even if you don't include it, DRF's internal machinery ensures that `serializer.save()` is called, resulting in the data being saved to the database.
+
+
+___________________________________________________________________-
+
+Q -> i am not saving instance again but still working right
+
+In your `ProductCreateAPIView`, the override of the `get_discount` method is successful because Python allows dynamic modification of object attributes, including methods, at runtime. Let's break down why this works step by step:
+
+1. **Saving the Instance**:
+   - When you call `serializer.save()`, a new `Product` instance is created and saved to the database with the data provided by the serializer.
+
+2. **Overriding the Method**:
+   - Immediately after saving, you override the `get_discount` method for the newly created instance:
+     ```python
+     instance.get_discount = lambda: int(discount_percentage)
+     ```
+   - This means any call to `instance.get_discount()` will now use this lambda function, returning the `discount_percentage` you provided.
+
+3. **Computed Property Access**:
+   - When you access `instance.sale_price`, the `sale_price` property calls `get_discount` to get the discount percentage and compute the sale price.
+   - Because you overrode `get_discount`, it returns the new discount percentage instead of the default one.
+
+### Detailed Explanation
+
+Here's the flow with additional comments for clarity:
+
+```python
+class ProductCreateAPIView(generics.CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def perform_create(self, serializer):
+        # Extract the discount_percentage from the request data (default to 70 if not provided)
+        discount_percentage = self.request.data.get('discount_percentage', 70)
+        
+        # Print statements to debug
+        print("Before save:")
+        print("Discount Percentage from request:", discount_percentage)
+
+        # Save the new instance
+        instance = serializer.save()
+
+        # Override the get_discount method on the instance
+        instance.get_discount = lambda: int(discount_percentage)
+
+        # Print statements to show the computed properties after override
+        print("After save:")
+        print("Sale Price:", instance.sale_price)
+        print("Discount Percentage from instance:", instance.get_discount())
+```
+
+### Why the Override Works Without Resaving
+
+- **In-Memory Changes**:
+  - The override modifies the method in memory. Python objects are mutable, so you can change their attributes and methods dynamically.
+  - These changes take effect immediately and do not require the instance to be saved again to the database.
+
+- **Accessing Properties**:
+  - The `sale_price` property is accessed after the method override. When `instance.sale_price` is accessed, it internally calls the overridden `get_discount` method.
+  - Since the `get_discount` method now returns the new discount percentage, the computed `sale_price` reflects this change.
+
+### Example Scenario
+
+Imagine you have a `Product` instance with the following initial data:
+
+```python
+# Initial instance creation (saved to database)
+instance = Product.objects.create(title="Example Product", price=100.00)
+```
+
+You then override the `get_discount` method:
+
+```python
+# Override get_discount dynamically
+instance.get_discount = lambda: 50
+```
+
+Now, whenever you access `instance.sale_price`, it uses the overridden `get_discount` method:
+
+```python
+# Accessing the computed property
+print(instance.sale_price)  # Computes using 50% discount
+```
+
+This dynamic modification does not require the instance to be saved again because the change is in the object's in-memory representation.
+
+### Conclusion
+
+The override of `get_discount` is effective immediately after it is set, allowing the `sale_price` property to use the new discount percentage. This demonstrates Python's flexibility with object attributes and methods, enabling dynamic behavior without the need for additional saves to the database.
