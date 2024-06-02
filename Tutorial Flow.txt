@@ -731,6 +731,109 @@ ___________________________________________________________________
 ✔️commit -12  .. commit 2 on v5 branch till(1:41:57) 
 ------------------------------------------------------
 
+👉Note : I created a new branch  named v6-list&listCreate_APIView  from branch v5 and checkout to it 
+______________________________________________________________
+
+     From 01:41:57  DRF ListAPIView & ListCreateAPIView
+___________________________________________________________________
+
+
+### Explanation of Code
+
+1. **ProductListAPIView:**
+    - **queryset = Product.objects.all()**: Retrieves all instances of the Product model.
+    - **serializer_class = ProductSerializer**: Specifies the serializer to use for converting model instances to JSON.
+
+2. **ProductListCreateAPIView:**
+    - **queryset = Product.objects.all()**: Retrieves all instances of the Product model.
+    - **serializer_class = ProductSerializer**: Specifies the serializer to use for both listing and creating products.
+    - **perform_create(self, serializer)**: A method that is called when a POST request is made to create a new product.
+        - **discount_percentage = self.request.data.get('discount_percentage', 70)**: Retrieves the discount_percentage from the request data or defaults to 70.
+        - **instance = serializer.save()**: Saves the new product instance.
+        - **instance.get_discount = lambda: int(discount_percentage)**: Temporarily overrides the `get_discount` method to return the provided discount percentage.
+        - **instance.save()**: Saves the instance again to apply the overridden method.
+        - **print("\nAfter save:")**: Prints the sale price and discount percentage after saving the instance to verify the changes.
+
+By following these steps, you can implement `ListCreateAPIView` to handle both listing and creating products, providing a versatile and efficient solution for your API.
+
+
+### Step-by-Step Guide
+
+--->  Step 1: Define the `ListAPIView`
+First, we create a view to list all products without allowing creation of new products.
+
+
+# views.py
+  code :-
+      class ProductListAPIView(generics.ListAPIView):
+          queryset = Product.objects.all()  # Retrieve all products
+          serializer_class = ProductSerializer  # Use ProductSerializer to serialize the data
+
+
+---> Step 2: Define the `ListCreateAPIView`
+Next, we define a view to handle both listing and creation of products.
+
+
+# views.py
+    code :-
+        class ProductListCreateAPIView(generics.ListCreateAPIView):
+            queryset = Product.objects.all()  # Retrieve all products
+            serializer_class = ProductSerializer  # Use ProductSerializer to serialize and deserialize data
+
+            def perform_create(self, serializer):
+                discount_percentage = self.request.data.get('discount_percentage', 70)  # Get discount from request data or default to 70
+
+                # Save the instance
+                instance = serializer.save()  # Save the product instance
+                instance.get_discount = lambda: int(discount_percentage)  # Override get_discount method with the provided discount
+                instance.save()  # Save the instance again to apply the overridden method
+
+                # Print details after saving to verify
+                print("\nAfter save:")
+                print("Sale Price:", instance.sale_price)
+                print("Discount Percentage:", instance.get_discount())
+
+---> Step 3: Configure URLs
+
+Add these in url_patterns
+     path('list-products/',views.ProductListAPIView.as_view()),
+     path('list-create/',views.ProductListCreateAPIView.as_view()),
+
+
+---> To test ProductListAPIView create list_products.py
+   code :-
+      import requests
+
+      base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+      endpoint = f"{base_url}api/products/list-products"
+
+      get_response=requests.get(endpoint)
+      print(get_response)
+
+---> To test ProductListCreateAPIView create list_create.py
+   
+   code :-
+      import requests
+
+      base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+
+      endpoint = f"{base_url}api/products/list-create/"
+
+      payload={'title': 'test77', 'content': 'test content', 'price': '1000',  'discount_percentage': 10,}
+      get_response=requests.get(endpoint)
+      print(get_response.json())
+
+      get_post_response=requests.post(endpoint,json=payload)
+      print(get_post_response.json())
+
+   
+o/p :- too long so not included here\
+
+----------------------------------------------------------
+✔️commit -13  .. commit 1 on v6 branch till(1:44:37) 
+------------------------------------------------------
+
+
 
 
 
