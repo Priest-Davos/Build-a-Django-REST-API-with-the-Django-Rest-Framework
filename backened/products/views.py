@@ -31,3 +31,23 @@ class ProductCreateAPIView(generics.CreateAPIView):
       print("\nAfter save:")
       print("Sale Price:", instance.sale_price)
       print("Discount Percentage:", instance.get_discount())
+      
+class ProductListAPIView(generics.ListAPIView):
+  queryset = Product.objects.all()
+  serializer_class = ProductSerializer
+  
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+  queryset = Product.objects.all()
+  serializer_class = ProductSerializer
+
+  def perform_create(self, serializer):
+     
+      discount_percentage = self.request.data.get('discount_percentage', 70) #invalidated data
+      
+      # Save the instance
+      instance = serializer.save( )
+      # Override get_discount method
+      print(instance.get_discount()) # 80  # since in model it returns static value
+      instance.get_discount = lambda: int(discount_percentage)
+      instance.save()
+    
