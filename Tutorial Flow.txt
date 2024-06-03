@@ -833,7 +833,95 @@ o/p :- too long so not included here\
 ✔️commit -13  .. commit 1 on v6 branch till(1:44:37) 
 ------------------------------------------------------
 
+👉Note : I created a new branch  named v7-FunctionBasedViewForCreateRetrieveOrList  from branch v7 and checkout to it 
+______________________________________________________________
 
+     From 01:44:37  Using Function Based Views For Create Retrieve or List
+___________________________________________________________________
+This Django REST framework function-based view handles both listing all products and creating new products.
+
+1) GET Requests:
+--Specific Product: If a primary key (pk) is provided, it retrieves and returns the details of the specific product.
+--All Products: If no pk is provided, it returns a list of all products.
+
+2) POST Requests:
+--Validates the incoming data for creating a new product.
+--Saves the new product instance.
+--Optionally applies a discount percentage from the request data.
+--Returns the details of the created product or validation errors if the data is invalid.
+
+->update views.py
+
+code :-
+      
+        @api_view(["GET","POST"])
+        def FuncBasedProduct_all_view(request,pk=None, *args,**kwargs):
+            method=request.method
+            queryset = Product.objects.all()
+            serializer=ProductSerializer(queryset,many=True)
+            if method=="GET":
+              if pk!=None:
+                # Retrieve a specific product by primary key
+                 try:
+                     product = Product.objects.get(pk=pk)
+                 except Product.DoesNotExist:
+                     return Response({"detail": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+                 serializer = ProductSerializer(product)
+                 return Response(serializer.data)
+
+
+              # List all product
+
+              data=serializer.data 
+              return Response(data)
+
+            elif method == "POST":
+                # Create a new product
+                serializer = ProductSerializer(data=request.data)
+                if serializer.is_valid():
+                    instance = serializer.save()
+                    discount_percentage = request.data.get('discount_percentage', 70)
+                    instance.get_discount = lambda: int(discount_percentage)
+                    instance.save()
+                    response_serializer = ProductSerializer(instance)
+                    return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+-> update urls.py
+
+Add
+   path('funcBased/',views.FuncBasedProduct_all_view),
+   path('funcBased/<int:pk>/', views.FuncBasedProduct_all_view),
+
+-> To test create FuncBasedView.py
+  code :-
+      import requests
+
+      base_url='http://127.0.0.1:8000/'#or 'localhost:8000'
+
+      endpoint = f"{base_url}api/products/funcBased/"
+
+      # create a product
+      payload={'title': 'test79', 'content': 'test content', 'price': '1000',  'discount_percentage': 10,}
+      get_post_response=requests.post(endpoint,json=payload)
+      print(get_post_response.json())
+
+
+      #list all products
+      get_response=requests.get(endpoint)
+      print(get_response.json())
+
+
+      # fetch a  unique propduct using id 
+      endpoint = f"{base_url}api/products/funcBased/1"
+      get_response=requests.get(endpoint)
+      print(get_response.json())
+
+-> run  the py file to test
+----------------------------------------------------------
+✔️commit -14  .. commit 1 on v7 branch till(1:55:18) 
+------------------------------------------------------
 
 
 
